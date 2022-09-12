@@ -1,6 +1,7 @@
 package ru.aleksx.snmibot.props;
 
 import lombok.Data;
+import org.hibernate.validator.constraints.URL;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
@@ -20,4 +21,11 @@ public class BotProperties {
     @NotEmpty
     @NotBlank
     private String botUserName;
+    @NotEmpty
+    @NotBlank
+    private String channelUuid;
+
+    @NotEmpty
+    @URL
+    private String targetUrl;
 }

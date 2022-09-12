@@ -9,5 +9,10 @@
       "name": "bot.bot-token",
       "type": "java.lang.String",
       "description": "Telegram token of bot."
+    },
+    {
+      "name": "bot.target-url",
+      "type": "java.lang.String",
+      "description": "снми.рф url decoded."
     }
   ] }
