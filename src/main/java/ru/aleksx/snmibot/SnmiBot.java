@@ -58,56 +58,57 @@ public class SnmiBot extends TelegramLongPollingBot {
     @Scheduled(fixedDelay = 60, timeUnit = TimeUnit.SECONDS, initialDelay = 5)
     public void getPageScheduled() throws TelegramApiException {
         var article = fetchService.fetch(); //ToDo refactor this to service
-        if (entityService.isEntityUpdated(article)) { //Send to Channel
+        var isEntityUpdated = entityService.isEntityUpdated(article);
+        if (isEntityUpdated) { //Send to Channel
             var subArticleList = article.getSubArticles();
+            var textBuilder = new StringBuilder();
+            String text;
             for (int i = 0; i < subArticleList.size(); i++) {
                 var subArticle = subArticleList.get(i);
                 var subArticleParts = subArticle.getArticleParts();
-                if (i == 0) {
-                    var text = String.format("<b>%s\n\n%s</b>\n\n<u>%s</u>\n\n%s",
+
+                if (i == 0) { //first subArticle, need title
+                    text = String.format("<b>%s\n\n%s</b>\n\n",
                             article.getDateAsText(),
-                            article.getTitle(), //ToDo make this title as link on site.
-                            subArticle.getHeader(),
-                            new String(subArticle.getArticleParts().get(0).getText()));
-                    var firstMsg = new SendMessage(botProperties.getChannelUuid(), text);
-                    firstMsg.enableHtml(true);
-                    execute(firstMsg);
-                    for (int y = 1; y < subArticleParts.size(); y++) {
-                        sendArticlePart(subArticleParts.get(y));
-                    }
+                            article.getTitle()); //ToDo make this title as link on site.
 
-                } else {
-                    for (int x = 0; x < subArticleParts.size(); x++) {
-                        if (x == 0) { // first with header
-                            var text = String.format("<u>%s</u>\n\n%s",
-                                    subArticle.getHeader(),
-                                    new String(subArticleParts.get(0).getText(), StandardCharsets.UTF_8));
-                            var firstMsg = new SendMessage(botProperties.getChannelUuid(), text);
-                            firstMsg.enableHtml(true);
-                            execute(firstMsg);
-
-                        } else {
-                            sendArticlePart(subArticleParts.get(x));
-                        }
-                    }
-
+                    textBuilder.append(text);
                 }
+
+                for (int j = 0, subArticlePartsSize = subArticleParts.size(); j < subArticlePartsSize; j++) {
+                    ArticlePart articlePart = subArticleParts.get(j);
+                    var currentLength = textBuilder.length();
+                    if (j == 0) { //header of subarticle
+                        text = String.format("<u>%s</u>\n\n%s",
+                                subArticle.getHeader(),
+                                new String(articlePart.getText(), StandardCharsets.UTF_8));
+                    } else {
+                        text = new String(articlePart.getText(), StandardCharsets.UTF_8);
+                    }
+
+                    if (currentLength + text.length() <= 4075) {
+                        textBuilder.append("\n\n");
+                        var format = articlePart.isQuote() ? "<i>%s</i>" : "%s";
+                        textBuilder.append(String.format(format, text));
+                    } else { //More than 4096
+                        textBuilder.append("\n\n<b>...Далее...</b>");
+                        sendHtmlMessage(textBuilder);
+                        textBuilder.setLength(0);
+                        textBuilder.append(text);
+                    }
+                }
+            }
+            if (!textBuilder.isEmpty()) {
+                sendHtmlMessage(textBuilder);
             }
             entityService.save(article);
         }
+
     }
 
-    private void sendArticlePart(ArticlePart subArticlePart) throws TelegramApiException {
-        var format = subArticlePart.isQuote() ? "<i>%s</i>" : "%s";
-        var sendMessage = new SendMessage(
-                botProperties.getChannelUuid(),
-                String.format(format, new String(subArticlePart.getText(), StandardCharsets.UTF_8)));
-        sendMessage.enableHtml(true);
-        execute(sendMessage);
-    }
-
-
-    private void sendToChannel(Article newArticle) {
-
+    private void sendHtmlMessage(StringBuilder textBuilder) throws TelegramApiException {
+        var msg = new SendMessage(botProperties.getChannelUuid(), textBuilder.toString());
+        msg.enableHtml(true);
+        execute(msg);
     }
 }
