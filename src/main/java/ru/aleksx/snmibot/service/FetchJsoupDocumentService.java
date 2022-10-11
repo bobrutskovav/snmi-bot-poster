@@ -70,6 +70,16 @@ public class FetchJsoupDocumentService implements FetchService<Article> {
                     articleParts = new ArrayList<>();
                     subArticle = new SubArticle(childnode.text());
                 }
+                case ("ul") -> {
+                    var stringBuilder = new StringBuilder();
+                    for (Element child : childnode.children()) {
+                        stringBuilder.append(child.text()).append("\n");
+                    }
+                    articleParts.add(
+                            new ArticlePart(stringBuilder.toString().getBytes(StandardCharsets.UTF_8), false)
+                    );
+
+                }
                 default -> articleParts.add(new ArticlePart(
                         childnode.text().getBytes(StandardCharsets.UTF_8),
                         childnode.nodeName().equals("blockquote")));
@@ -79,8 +89,6 @@ public class FetchJsoupDocumentService implements FetchService<Article> {
         assert subArticle != null;
         subArticle.setArticleParts(articleParts);
         subArticles.add(subArticle);
-
-        System.out.println(papperElement.text());
         return new Article(dateTime, title, dateTimeText, subArticles);
     }
 
