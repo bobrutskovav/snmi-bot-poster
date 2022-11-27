@@ -1,13 +1,16 @@
 package ru.aleksx.snmibot.service;
 
 
+import org.apache.tomcat.util.buf.StringUtils;
 import org.jsoup.Jsoup;
+import org.jsoup.internal.StringUtil;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.web.client.RestTemplate;
 import ru.aleksx.snmibot.SnmiBot;
+import ru.aleksx.snmibot.exception.ParseException;
 import ru.aleksx.snmibot.props.BotProperties;
 import ru.aleksx.snmibot.service.model.Article;
 import ru.aleksx.snmibot.service.model.ArticlePart;
@@ -57,11 +60,14 @@ public class FetchJsoupDocumentService implements FetchService<Article> {
         List<SubArticle> subArticles = new ArrayList<>();
         List<ArticlePart> articleParts = new ArrayList<>();
         String title = mainPage.selectXpath(XPATH_TITLE).text();
+        if (StringUtil.isBlank(title)) {
+            throw new ParseException("Can't parse title of Article");
+        }
         SubArticle subArticle = null;
         for (Element childnode : papperElement.get(0).children()) {
 
             switch (childnode.nodeName()) {
-                case ("h2") -> {
+                case "h2", "h1"  -> {
                     if (subArticle != null) {
                         subArticle.setArticleParts(articleParts);
                         subArticles.add(subArticle);
@@ -86,7 +92,9 @@ public class FetchJsoupDocumentService implements FetchService<Article> {
             }
 
         }
-        assert subArticle != null;
+        if (subArticle == null) {
+            throw new ParseException("Subarticle is not parced!");
+        }
         subArticle.setArticleParts(articleParts);
         subArticles.add(subArticle);
         return new Article(dateTime, title, dateTimeText, subArticles);

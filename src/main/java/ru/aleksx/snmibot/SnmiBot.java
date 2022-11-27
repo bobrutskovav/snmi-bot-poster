@@ -1,5 +1,6 @@
 package ru.aleksx.snmibot;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.DefaultBotOptions;
@@ -7,6 +8,7 @@ import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import ru.aleksx.snmibot.exception.ParseException;
 import ru.aleksx.snmibot.props.BotProperties;
 import ru.aleksx.snmibot.service.EntityService;
 import ru.aleksx.snmibot.service.FetchService;
@@ -17,6 +19,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 
 @Component
+@Slf4j
 public class SnmiBot extends TelegramLongPollingBot {
 
 
@@ -57,7 +60,13 @@ public class SnmiBot extends TelegramLongPollingBot {
 
     @Scheduled(fixedDelayString = "${spring.scheduled.get-page.delay:#{300}}", timeUnit = TimeUnit.SECONDS, initialDelay = 10)
     public void getPageScheduled() throws TelegramApiException {
-        var article = fetchService.fetch(); //ToDo refactor this to service
+        Article article = null;
+        try {
+            article = fetchService.fetch(); //ToDo refactor this to service
+        } catch (ParseException e) {
+            log.error("Parse Exception here!", e);
+            System.exit(1);
+        }
         var isEntityUpdated = entityService.isEntityUpdated(article);
         if (isEntityUpdated) { //Send to Channel
             var subArticleList = article.getSubArticles();
