@@ -14,5 +14,10 @@
       "name": "bot.target-url",
       "type": "java.lang.String",
       "description": "снми.рф url decoded."
+    },
+    {
+      "name": "spring.scheduled.get-page.delay",
+      "type": "java.lang.String",
+      "description": "Delay in seconds for fetch request on site."
     }
   ] }

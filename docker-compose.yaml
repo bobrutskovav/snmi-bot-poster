@@ -1,0 +1,23 @@
+version: "3.8"
+services:
+  mongo-db:
+    image: mongo:4.2.9
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - snmi_bot_mongo_db_vol:/data/db
+      - snmi_bot_mongo_config_db_vol:/data/configdb
+volumes:
+  snmi_bot_mongo_db_vol:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/orangepi/myapps/snmi-bot/dockervol/db
+  snmi_bot_mongo_config_db_vol:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/orangepi/myapps/snmi-bot/dockervol/dbconfig

@@ -55,7 +55,7 @@ public class SnmiBot extends TelegramLongPollingBot {
     }
 
 
-    @Scheduled(fixedDelay = 60, timeUnit = TimeUnit.SECONDS, initialDelay = 5)
+    @Scheduled(fixedDelayString = "${spring.scheduled.get-page.delay:#{300}}", timeUnit = TimeUnit.SECONDS, initialDelay = 10)
     public void getPageScheduled() throws TelegramApiException {
         var article = fetchService.fetch(); //ToDo refactor this to service
         var isEntityUpdated = entityService.isEntityUpdated(article);
