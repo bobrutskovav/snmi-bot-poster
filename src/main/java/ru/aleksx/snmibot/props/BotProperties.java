@@ -26,6 +26,10 @@ public class BotProperties {
     private String channelUuid;
 
     @NotEmpty
+    @NotBlank
+    private String adminUuid;
+
+    @NotEmpty
     @URL
     private String targetUrl;
 }

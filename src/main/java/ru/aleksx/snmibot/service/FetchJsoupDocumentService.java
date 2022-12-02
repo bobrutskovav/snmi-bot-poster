@@ -1,6 +1,11 @@
 package ru.aleksx.snmibot.service;
 
 
+import com.gargoylesoftware.htmlunit.Page;
+import com.gargoylesoftware.htmlunit.SilentCssErrorHandler;
+import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.buf.StringUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.internal.StringUtil;
@@ -26,10 +31,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+@Slf4j
 public class FetchJsoupDocumentService implements FetchService<Article> {
 
-    private final RestTemplate restTemplate;
-
+    private final WebClient webClient = new WebClient();
     private final BotProperties botProperties;
 
 
@@ -40,19 +45,21 @@ public class FetchJsoupDocumentService implements FetchService<Article> {
     //9 сентября 2022 года, 12:07 МСК
     private static final DateTimeFormatter currentZonedDateTimeFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy года, HH:mm МСК", new Locale("ru"));
 
-    public FetchJsoupDocumentService(RestTemplate restTemplate, BotProperties botProperties) {
-        this.restTemplate = restTemplate;
+
+
+    public FetchJsoupDocumentService(BotProperties botProperties) {
         this.botProperties = botProperties;
+        webClient.setCssErrorHandler(new SilentCssErrorHandler());
     }
 
     @Override
     public Article fetch() {
-        Document mainPage = restTemplate
-                .execute(botProperties.getTargetUrl(),
-                        HttpMethod.GET,
-                        null,
-                        this::parseResponse);
-        assert mainPage != null;
+        Page page;
+        try {
+         page =  webClient.getPage(botProperties.getTargetUrl());
+
+
+        Document mainPage = Jsoup.parse(((HtmlPage) page).asXml());
         var currentDateElement = mainPage.selectXpath(XPATH_CURRENT_DATE);
         var papperElement = mainPage.selectXpath(XPATH_ARTICLE_BODY);
         var dateTimeText = currentDateElement.text(); //ToDo first check DB, after parse!
@@ -98,6 +105,11 @@ public class FetchJsoupDocumentService implements FetchService<Article> {
         subArticle.setArticleParts(articleParts);
         subArticles.add(subArticle);
         return new Article(dateTime, title, dateTimeText, subArticles);
+        } catch (IOException e) {
+            log.error("Error in WebClient!", e);
+            throw new RuntimeException(e);
+
+        }
     }
 
 
@@ -110,4 +122,6 @@ public class FetchJsoupDocumentService implements FetchService<Article> {
         var page = result.toString(StandardCharsets.UTF_8);
         return Jsoup.parse(page);
     }
+
+
 }

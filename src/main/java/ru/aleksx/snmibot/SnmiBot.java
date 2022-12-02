@@ -8,7 +8,6 @@ import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
-import ru.aleksx.snmibot.exception.ParseException;
 import ru.aleksx.snmibot.props.BotProperties;
 import ru.aleksx.snmibot.service.EntityService;
 import ru.aleksx.snmibot.service.FetchService;
@@ -60,57 +59,64 @@ public class SnmiBot extends TelegramLongPollingBot {
 
     @Scheduled(fixedDelayString = "${spring.scheduled.get-page.delay:#{300}}", timeUnit = TimeUnit.SECONDS, initialDelay = 10)
     public void getPageScheduled() throws TelegramApiException {
-        Article article = null;
         try {
-            article = fetchService.fetch(); //ToDo refactor this to service
-        } catch (ParseException e) {
-            log.error("Parse Exception here!", e);
-            System.exit(1);
-        }
-        var isEntityUpdated = entityService.isEntityUpdated(article);
-        if (isEntityUpdated) { //Send to Channel
-            var subArticleList = article.getSubArticles();
-            var textBuilder = new StringBuilder();
-            String text;
-            for (int i = 0; i < subArticleList.size(); i++) {
-                var subArticle = subArticleList.get(i);
-                var subArticleParts = subArticle.getArticleParts();
+            var article = fetchService.fetch(); //ToDo refactor this to service
+            var isEntityUpdated = entityService.isEntityUpdated(article);
+            if (isEntityUpdated) { //Send to Channel
+                var subArticleList = article.getSubArticles();
+                var textBuilder = new StringBuilder();
+                String text;
+                for (int i = 0; i < subArticleList.size(); i++) {
+                    var subArticle = subArticleList.get(i);
+                    var subArticleParts = subArticle.getArticleParts();
 
-                if (i == 0) { //first subArticle, need title
-                    text = String.format("<b>%s\n\n%s</b>\n\n",
-                            article.getDateAsText(),
-                            article.getTitle()); //ToDo make this title as link on site.
+                    if (i == 0) { //first subArticle, need title
+                        text = String.format("<b>%s\n\n%s</b>\n\n",
+                                article.getDateAsText(),
+                                article.getTitle()); //ToDo make this title as link on site.
 
-                    textBuilder.append(text);
-                }
-
-                for (int j = 0, subArticlePartsSize = subArticleParts.size(); j < subArticlePartsSize; j++) {
-                    ArticlePart articlePart = subArticleParts.get(j);
-                    var currentLength = textBuilder.length();
-                    if (j == 0) { //header of subarticle
-                        text = String.format("<u>%s</u>\n\n%s",
-                                subArticle.getHeader(),
-                                new String(articlePart.getText(), StandardCharsets.UTF_8));
-                    } else {
-                        text = new String(articlePart.getText(), StandardCharsets.UTF_8);
-                    }
-
-                    if (currentLength + text.length() <= 4075) {
-                        textBuilder.append("\n\n");
-                        var format = articlePart.isQuote() ? "<i>%s</i>" : "%s";
-                        textBuilder.append(String.format(format, text));
-                    } else { //More than 4096
-                        textBuilder.append("\n\n<b>...Далее...</b>");
-                        sendHtmlMessage(textBuilder);
-                        textBuilder.setLength(0);
                         textBuilder.append(text);
                     }
+
+                    for (int j = 0, subArticlePartsSize = subArticleParts.size(); j < subArticlePartsSize; j++) {
+                        ArticlePart articlePart = subArticleParts.get(j);
+                        var currentLength = textBuilder.length();
+                        if (j == 0) { //header of subarticle
+                            text = String.format("<u>%s</u>\n\n%s",
+                                    subArticle.getHeader(),
+                                    new String(articlePart.getText(), StandardCharsets.UTF_8));
+                        } else {
+                            text = new String(articlePart.getText(), StandardCharsets.UTF_8);
+                        }
+
+                        if (currentLength + text.length() <= 4075) {
+                            textBuilder.append("\n\n");
+                            var format = articlePart.isQuote() ? "<i>%s</i>" : "%s";
+                            textBuilder.append(String.format(format, text));
+                        } else { //More than 4096
+                            textBuilder.append("\n\n<b>...Далее...</b>");
+                            sendHtmlMessage(textBuilder);
+                            textBuilder.setLength(0);
+                            textBuilder.append(text);
+                        }
+                    }
                 }
+                if (!textBuilder.isEmpty()) {
+                    sendHtmlMessage(textBuilder);
+                }
+                entityService.save(article);
+
+
             }
-            if (!textBuilder.isEmpty()) {
-                sendHtmlMessage(textBuilder);
+        } catch (Exception e) {
+            log.error("Some Exception in process, send alarm to admin", e);
+            var msg = new SendMessage(botProperties.getAdminUuid(), String.format("Exception in snmi-bot \n %s \n %s. \n Bot is down", e.getMessage(), e.getCause()));
+            try {
+                execute(msg);
+            } catch (Exception exception) {
+                log.error("Error on sending msg to admin", e);
             }
-            entityService.save(article);
+            System.exit(1);
         }
 
     }

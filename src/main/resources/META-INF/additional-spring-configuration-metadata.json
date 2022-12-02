@@ -19,5 +19,10 @@
       "name": "spring.scheduled.get-page.delay",
       "type": "java.lang.String",
       "description": "Delay in seconds for fetch request on site."
+    },
+    {
+      "name": "bot.admin-uuid",
+      "type": "java.lang.String",
+      "description": "UUID of bot admin."
     }
   ] }
