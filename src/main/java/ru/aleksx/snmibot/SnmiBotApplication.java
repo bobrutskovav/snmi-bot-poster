@@ -61,9 +61,8 @@ public class SnmiBotApplication {
 
 
     @Bean
-    public FetchService<Article> articleFetchService(RestTemplate restTemplate,
-                                                     BotProperties botProperties) {
-        return new FetchJsoupDocumentService(restTemplate,botProperties);
+    public FetchService<Article> articleFetchService(BotProperties botProperties) {
+        return new FetchJsoupDocumentService(botProperties);
     }
 
 
