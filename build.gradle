@@ -19,10 +19,12 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.telegram:telegrambots-spring-boot-starter:6.1.0'
+    implementation 'org.telegram:telegrambots-spring-boot-starter:6.3.0'
 
     implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
     implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    runtimeClasspath 'io.micrometer:micrometer-registry-prometheus'
     implementation 'net.sourceforge.htmlunit:htmlunit:2.67.0'
 
     compileOnly 'org.projectlombok:lombok'

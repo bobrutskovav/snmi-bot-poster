@@ -24,5 +24,15 @@
       "name": "bot.admin-uuid",
       "type": "java.lang.String",
       "description": "UUID of bot admin."
+    },
+    {
+      "name": "bot.target-url-archive",
+      "type": "java.lang.String",
+      "description": "снми.рф/архив decoded."
+    },
+    {
+      "name": "bot.article-count",
+      "type": "java.lang.Integer",
+      "description": "Count of last articles to parse."
     }
   ] }

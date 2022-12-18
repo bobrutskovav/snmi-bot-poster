@@ -6,6 +6,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
 
+import javax.validation.constraints.Digits;
+import javax.validation.constraints.Max;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 
@@ -32,4 +34,11 @@ public class BotProperties {
     @NotEmpty
     @URL
     private String targetUrl;
+
+    @NotEmpty
+    @URL
+    private String targetUrlArchive;
+
+    @Max(value = Integer.MAX_VALUE)
+    private int articleCount;
 }
