@@ -21,11 +21,11 @@ public class ArticleService implements EntityService<Article> {
     }
 
     public boolean isArticleUpdated(Article newArticle) {
-        return lastArticle == null || newArticle.getArticleDateTime().isAfter(lastArticle.getArticleDateTime());
+        return articleRepository.existsArticleByArticleDateTime(newArticle.getArticleDateTime());
     }
 
     @Override
-    public boolean isEntityUpdated(Article article) {
+    public boolean isEntityAlreadySend(Article article) {
         return isArticleUpdated(article);
     }
 

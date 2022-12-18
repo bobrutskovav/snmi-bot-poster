@@ -3,6 +3,6 @@ package ru.aleksx.snmibot.service;
 public interface EntityService<T> {
 
 
-    boolean isEntityUpdated(T entity);
+    boolean isEntityAlreadySend(T entity);
     T save(T entity);
 }
