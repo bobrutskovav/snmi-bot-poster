@@ -45,7 +45,7 @@ public class FetchJsoupDocumentService implements FetchService<Article> {
     private static final String XPATH_ARTICLE_BODY = "//div[@class='paper__content']";
     private static final String XPATH_TITLE = "//div[@class='paper__title']";
 
-    private static final String XPATH_ARCHIVE_LIST_PATTERN = "(//ul[@class ='news-list'])[1]/li[%d]//a";
+    private static final String XPATH_ARCHIVE_LIST_PATTERN = "(//ul[@class ='news-list']/li//a)[position() <=%d]";
 
     //9 сентября 2022 года, 12:07 МСК
     private static final DateTimeFormatter currentZonedDateTimeFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy года, HH:mm МСК", new Locale("ru"));
@@ -133,18 +133,16 @@ public class FetchJsoupDocumentService implements FetchService<Article> {
         }
 
         var htmlPage = (HtmlPage) archivePage;
-        var urls = new ArrayList<String>();
 
-        for (int i = count; i > 0; i--) {
-            var articleUrl = htmlPage.getFirstByXPath(String.format(XPATH_ARCHIVE_LIST_PATTERN, i));
-            if (articleUrl == null) {
-                throw new ParseException("Can't find articles in archive!");
-            }
 
-            var listItem = (HtmlAnchor) articleUrl;
-            String urlString = listItem.getHrefAttribute();
-            urls.add(urlString);
+        var articlesUrl = htmlPage.getByXPath(String.format(XPATH_ARCHIVE_LIST_PATTERN, count));
+        if (articlesUrl.isEmpty()) {
+            throw new ParseException("Can't find articles in archive!");
         }
+        var urls = articlesUrl.stream().map(element -> {
+            var listItem = (HtmlAnchor) element;
+            return listItem.getHrefAttribute();
+        }).collect(Collectors.toList());
 
         return urls.stream().map(this::getArticleFromUrl).collect(Collectors.toList());
 
