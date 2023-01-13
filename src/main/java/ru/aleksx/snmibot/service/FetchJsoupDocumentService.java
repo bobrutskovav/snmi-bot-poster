@@ -112,7 +112,7 @@ public class FetchJsoupDocumentService implements FetchService<Article> {
             }
             subArticle.setArticleParts(articleParts);
             subArticles.add(subArticle);
-            return new Article(dateTime, title, dateTimeText, subArticles);
+            return new Article(dateTime, title, dateTimeText,targetUrl, subArticles);
         } catch (IOException e) {
             log.error("Error in WebClient!", e);
             throw new RuntimeException(e);

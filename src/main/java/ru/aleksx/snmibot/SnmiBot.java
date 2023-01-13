@@ -74,8 +74,9 @@ public class SnmiBot extends TelegramLongPollingBot {
                         var subArticleParts = subArticle.getArticleParts();
 
                         if (i == 0) { //first subArticle, need title
-                            text = String.format("<b>%s\n\n%s</b>\n\n",
+                            text = String.format("<b>%s\n\n<a href=\"%s\">%s</a></b>\n\n",
                                     article.getDateAsText(),
+                                    article.getArticleUrl(),
                                     article.getTitle()); //ToDo make this title as link on site.
 
                             textBuilder.append(text);
@@ -128,7 +129,6 @@ public class SnmiBot extends TelegramLongPollingBot {
             } catch (Exception exception) {
                 log.error("Error on sending msg to admin", e);
             }
-            System.exit(1);
         }
 
     }
