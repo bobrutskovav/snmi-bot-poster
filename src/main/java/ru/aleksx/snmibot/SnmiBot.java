@@ -128,7 +128,6 @@ public class SnmiBot extends TelegramLongPollingBot {
             } catch (Exception exception) {
                 log.error("Error on sending msg to admin", e);
             }
-            System.exit(1);
         }
 
     }
