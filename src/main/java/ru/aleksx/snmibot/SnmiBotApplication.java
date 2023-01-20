@@ -3,13 +3,13 @@ package ru.aleksx.snmibot;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.client.RestTemplate;
 import org.telegram.telegrambots.bots.DefaultBotOptions;
+import org.telegram.telegrambots.updatesreceivers.ExponentialBackOff;
 import ru.aleksx.snmibot.props.BotProperties;
 import ru.aleksx.snmibot.props.ProxyProperties;
 import ru.aleksx.snmibot.repository.ArticleRepository;
@@ -28,13 +28,14 @@ import java.net.Proxy;
 public class SnmiBotApplication {
 
     public static void main(String[] args) {
-            SpringApplication.run(SnmiBotApplication.class, args);
+        SpringApplication.run(SnmiBotApplication.class, args);
 
     }
 
 
     @Bean
-    public DefaultBotOptions defaultBotOptions(ProxyProperties proxyProperties) {
+    public DefaultBotOptions defaultBotOptions(ProxyProperties proxyProperties,
+                                               BotProperties botProperties) {
         var options = new DefaultBotOptions();
         if (proxyProperties.isEnabled()) {
             options.setProxyHost(proxyProperties.getHost());
@@ -42,11 +43,17 @@ public class SnmiBotApplication {
             options.setProxyPort(proxyProperties.getPort());
         }
 
+        var builder = new ExponentialBackOff.Builder();
+        var backoff = builder
+                .setInitialIntervalMillis(botProperties.getExponentBackoffInitialInterval())
+                .setMultiplier(botProperties.getExponentBackoffMultiplier())
+                .build();
+        options.setBackOff(backoff);
         return options;
     }
 
     @Bean
-    public RestTemplate restTemplate(RestTemplateBuilder restTemplateBuilder,SimpleClientHttpRequestFactory simpleClientHttpRequestFactory) {
+    public RestTemplate restTemplate(RestTemplateBuilder restTemplateBuilder, SimpleClientHttpRequestFactory simpleClientHttpRequestFactory) {
         return restTemplateBuilder.requestFactory(() -> simpleClientHttpRequestFactory).build();
     }
 
