@@ -21,6 +21,9 @@ public class Article {
     private String title;
     @Transient
     private String dateAsText;
+
+    @Transient
+    private String articleUrl;
     private LocalDateTime articleDateTime;
     private List<SubArticle> subArticles;
 
@@ -30,11 +33,13 @@ public class Article {
     public Article(LocalDateTime articleDateTime,
                    String title,
                    String dateAsText,
+                   String articleUrl,
                    List<SubArticle> subArticles) {
         this.title = title;
         this.dateAsText = dateAsText;
         this.objectId = ObjectId.getSmallestWithDate(new Date());
         this.articleDateTime = articleDateTime;
+        this.articleUrl = articleUrl;
         this.subArticles = subArticles;
 
     }
