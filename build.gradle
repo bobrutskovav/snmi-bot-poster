@@ -24,7 +24,7 @@ publishing {
 
     publications {
        maven(MavenPublication) {
-           artifact "build/libs/*SNAPSHOT.jar"
+           artifact "build/libs/${project.name}-${project.version}.jar"
        }
     }
 
