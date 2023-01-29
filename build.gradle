@@ -22,6 +22,12 @@ repositories {
 
 publishing {
 
+    publications {
+       maven(MavenPublication) {
+           artifact "build/libs/*SNAPSHOT.jar"
+       }
+    }
+
     repositories {
         maven {
             name = "GitHubPackages"
