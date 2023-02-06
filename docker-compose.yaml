@@ -2,7 +2,7 @@ version: "3.8"
 services:
   
   snmi-bot:
-    image: alekssh1fter/snmi-bot:1.0
+    image: alekssh1fter/snmi-bot:1.0-arm
     restart: "on-failure"
     environment:
       - SPRING_CONFIG_LOCATION=file:/appconfig/application.config
