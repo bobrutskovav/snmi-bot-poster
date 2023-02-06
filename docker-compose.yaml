@@ -1,8 +1,16 @@
 version: "3.8"
 services:
+  
+  snmi-bot:
+    image: alekssh1fter/snmi-bot:1.0
+    restart: "on-failure"
+    environment:
+      - SPRING_CONFIG_LOCATION=file:/appconfig/application.config
+    volumes:
+      - snmi_bot_app_config_vol:/appconfig
   mongo-db:
     image: mongo:4.2.9
-    restart: always
+    restart: "on-failure"
     ports:
       - "27017:27017"
     volumes:
@@ -21,3 +29,9 @@ volumes:
       type: none
       o: bind
       device: /home/orangepi/myapps/snmi-bot/dockervol/dbconfig
+  snmi_bot_app_config_vol:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/orangepi/myapps/snmi-bot/dockervol/appconfig

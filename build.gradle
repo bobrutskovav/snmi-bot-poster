@@ -6,7 +6,7 @@ plugins {
 }
 
 group = 'ru.aleksx'
-version = '0.0.1-SNAPSHOT'
+version = '1.0'
 sourceCompatibility = '19'
 
 configurations {
@@ -41,13 +41,13 @@ publishing {
 }
 
 dependencies {
-    implementation 'org.telegram:telegrambots-spring-boot-starter:6.3.0'
+    implementation 'org.telegram:telegrambots-spring-boot-starter:6.4.0'
 
     implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     runtimeClasspath 'io.micrometer:micrometer-registry-prometheus'
-    implementation 'net.sourceforge.htmlunit:htmlunit:2.67.0'
+    implementation 'net.sourceforge.htmlunit:htmlunit:2.70.0'
 
     compileOnly 'org.projectlombok:lombok'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
@@ -62,4 +62,23 @@ dependencies {
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+tasks.named("bootJar") {
+    launchScript()
+    exclude('application.properties')
+}
+
+
+tasks.named("bootBuildImage") {
+
+    imageName.set("alekssh1fter/${project.name}:${project.version}-arm")
+    builder = "dashaun/builder-arm:tiny"
+    docker {
+        publishRegistry {
+            username = dockerHubUser
+            password = dockerHubToken
+            //token = dockerHubToken
+        }
+    }
 }
