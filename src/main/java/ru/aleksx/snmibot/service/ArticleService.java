@@ -15,14 +15,9 @@ public class ArticleService implements EntityService<Article> {
     }
 
 
-
-    public boolean isArticleUpdated(Article newArticle) {
-        return articleRepository.existsArticleByArticleDateTime(newArticle.getArticleDateTime());
-    }
-
     @Override
     public boolean isEntityAlreadySend(Article article) {
-        return isArticleUpdated(article);
+        return articleRepository.existsArticleByArticleDateTime(article.getArticleDateTime());
     }
 
     @Override

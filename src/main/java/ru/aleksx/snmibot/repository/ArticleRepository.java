@@ -9,9 +9,5 @@ import java.time.ZonedDateTime;
 
 public interface ArticleRepository extends MongoRepository<Article, ObjectId> {
 
-
-    Article findFirstByArticleDateTime(ZonedDateTime articleDateTime);
-    Article findFirstByOrderByArticleDateTimeDesc();
-
     boolean existsArticleByArticleDateTime(LocalDateTime zonedDateTime);
 }
