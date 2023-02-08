@@ -8,6 +8,8 @@ services:
       - SPRING_CONFIG_LOCATION=file:/appconfig/application.config
     volumes:
       - snmi_bot_app_config_vol:/appconfig
+    ports:
+    - "8080:8080"
   mongo-db:
     image: mongo:4.2.9
     restart: "on-failure"
