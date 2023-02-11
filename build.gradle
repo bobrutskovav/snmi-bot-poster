@@ -1,9 +1,4 @@
-plugins {
-    id 'java'
-    id 'org.springframework.boot' version '3.0.2'
-    id 'io.spring.dependency-management' version '1.1.0'
-    id 'maven-publish'
-}
+
 
 group = 'ru.aleksx'
 version = '1.0'
@@ -15,30 +10,61 @@ configurations {
     }
 }
 
-repositories {
-    mavenCentral()
-}
 
 
-publishing {
 
-    publications {
-       maven(MavenPublication) {
-           artifact "build/libs/${project.name}-${project.version}.jar"
-       }
-    }
 
-    repositories {
-        maven {
-            name = "GitHubPackages"
-            url = "https://maven.pkg.github.com/bobrutskovav/snmi-bot-poster"
-            credentials {
-                username = System.getenv("GITHUB_USERNAME")
-                password = System.getenv("GITHUB_TOKEN")
+subprojects(subproject -> {
+
+
+    publishing {
+
+        publications {
+            maven(MavenPublication) {
+                artifact "build/libs/${subproject.name}-${subproject.version}.jar"
+            }
+        }
+
+        repositories {
+            maven {
+                name = "GitHubPackages"
+                url = "https://maven.pkg.github.com/bobrutskovav/snmi-bot-poster"
+                credentials {
+                    username = System.getenv("GITHUB_USERNAME")
+                    password = System.getenv("GITHUB_TOKEN")
+                }
             }
         }
     }
-}
+
+
+    tasks.named("bootBuildImage") {
+
+        imageName.set("alekssh1fter/${subproject.name}:${subproject.version}-arm")
+        builder = "dashaun/builder-arm:tiny"
+        docker {
+            publishRegistry {
+                username = dockerHubUser
+                password = dockerHubToken
+                //token = dockerHubToken
+            }
+        }
+    }
+
+    repositories {
+        mavenCentral()
+        maven { url 'https://artifactory-oss.prod.netflix.net/artifactory/maven-oss-candidates' }
+    }
+
+
+    ext {
+        set('springCloudVersion', "2022.0.1")
+    }
+
+})
+
+
+
 
 dependencies {
 
@@ -70,15 +96,4 @@ tasks.named("bootJar") {
 }
 
 
-tasks.named("bootBuildImage") {
 
-    imageName.set("alekssh1fter/${project.name}:${project.version}-arm")
-    builder = "dashaun/builder-arm:tiny"
-    docker {
-        publishRegistry {
-            username = dockerHubUser
-            password = dockerHubToken
-            //token = dockerHubToken
-        }
-    }
-}

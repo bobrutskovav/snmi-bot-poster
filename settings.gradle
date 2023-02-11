@@ -1,2 +1,4 @@
 rootProject.name = 'snmi-bot'
 include 'telegram-bot'
+include 'article-provider'
+
