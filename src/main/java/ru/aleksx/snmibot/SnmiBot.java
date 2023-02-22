@@ -85,10 +85,10 @@ public class SnmiBot extends TelegramLongPollingBot {
                         for (int j = 0, subArticlePartsSize = subArticleParts.size(); j < subArticlePartsSize; j++) {
                             ArticlePart articlePart = subArticleParts.get(j);
                             var currentLength = textBuilder.length();
-                            if (j == 0) { //header of subarticle
-                                text = String.format("<u>%s</u>\n\n%s",
-                                        subArticle.getHeader(),
-                                        new String(articlePart.getText(), StandardCharsets.UTF_8));
+                            if (j == 0 && subArticle.getHeader() != null) {
+                                    text = String.format("<u>%s</u>\n\n%s",
+                                            subArticle.getHeader(),
+                                            new String(articlePart.getText(), StandardCharsets.UTF_8)); //header of subarticle
                             } else {
                                 text = new String(articlePart.getText(), StandardCharsets.UTF_8);
                             }

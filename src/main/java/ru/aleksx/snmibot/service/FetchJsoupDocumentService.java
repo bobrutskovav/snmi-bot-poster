@@ -70,6 +70,7 @@ public class FetchJsoupDocumentService implements FetchService<Article> {
             Document mainPage = Jsoup.parse(((HtmlPage) page).asXml());
             var currentDateElement = mainPage.selectXpath(XPATH_CURRENT_DATE);
             var papperElement = mainPage.selectXpath(XPATH_ARTICLE_BODY);
+            if (papperElement.isEmpty()) throw new ParseException("Can't parse elements! is empty!");
             var dateTimeText = currentDateElement.text(); //ToDo first check DB, after parse!
             var dateTime = LocalDateTime.parse(dateTimeText, currentZonedDateTimeFormatter);
             List<SubArticle> subArticles = new ArrayList<>();
@@ -108,11 +109,13 @@ public class FetchJsoupDocumentService implements FetchService<Article> {
 
             }
             if (subArticle == null) {
-                throw new ParseException("Subarticle is not parced!");
+                var textWithoutSubArticle = papperElement.get(0).text();
+                subArticle = new SubArticle(null);
+                subArticle.setArticleParts(List.of(new ArticlePart(textWithoutSubArticle.getBytes(StandardCharsets.UTF_8), false)));
             }
             subArticle.setArticleParts(articleParts);
             subArticles.add(subArticle);
-            return new Article(dateTime, title, dateTimeText,targetUrl, subArticles);
+            return new Article(dateTime, title, dateTimeText, targetUrl, subArticles);
         } catch (IOException e) {
             log.error("Error in WebClient!", e);
             throw new RuntimeException(e);
