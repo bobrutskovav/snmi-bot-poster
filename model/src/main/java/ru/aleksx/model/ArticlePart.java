@@ -1,4 +1,4 @@
-package ru.aleksx.snmibot.service.model;
+package ru.aleksx.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

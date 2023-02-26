@@ -12,11 +12,13 @@ import org.jsoup.internal.StringUtil;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.springframework.http.client.ClientHttpResponse;
-import ru.aleksx.snmibot.exception.ParseException;
-import ru.aleksx.snmibot.props.BotProperties;
-import ru.aleksx.snmibot.service.model.Article;
-import ru.aleksx.snmibot.service.model.ArticlePart;
-import ru.aleksx.snmibot.service.model.SubArticle;
+import org.springframework.scheduling.annotation.Scheduled;
+import ru.aleksx.articleprovider.exception.ParseException;
+import ru.aleksx.articleprovider.props.ArticleProviderProperties;
+import ru.aleksx.model.Article;
+import ru.aleksx.model.ArticlePart;
+import ru.aleksx.model.SubArticle;
+
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -26,13 +28,14 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Slf4j
 public class FetchJsoupDocumentService implements FetchService<Article> {
 
     private final WebClient webClient = new WebClient();
-    private final BotProperties botProperties;
+    private final ArticleProviderProperties articleProviderProperties;
 
 
     private static final String XPATH_CURRENT_DATE = "//div[@class='paper__info paper__info--top']/div[@class='paper__date date']";
@@ -45,14 +48,14 @@ public class FetchJsoupDocumentService implements FetchService<Article> {
     private static final DateTimeFormatter currentZonedDateTimeFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy года, HH:mm МСК", new Locale("ru"));
 
 
-    public FetchJsoupDocumentService(BotProperties botProperties) {
-        this.botProperties = botProperties;
+    public FetchJsoupDocumentService(ArticleProviderProperties articleProviderProperties) {
+        this.articleProviderProperties = articleProviderProperties;
         webClient.setCssErrorHandler(new SilentCssErrorHandler());
     }
 
     @Override
     public Article fetch() {
-        return getArticleFromUrl(botProperties.getTargetUrl());
+        return getArticleFromUrl(articleProviderProperties.getTargetUrl());
 
     }
 
@@ -121,7 +124,7 @@ public class FetchJsoupDocumentService implements FetchService<Article> {
         // на каждый урл вызвать fetch
         Page archivePage;
         try {
-            archivePage = webClient.getPage(botProperties.getTargetUrlArchive());
+            archivePage = webClient.getPage(articleProviderProperties.getTargetUrlArchive());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -140,6 +143,12 @@ public class FetchJsoupDocumentService implements FetchService<Article> {
 
         return urls.stream().map(this::getArticleFromUrl).collect(Collectors.toList());
 
+
+    }
+
+    @Scheduled(fixedDelayString = "${provider.scheduled.get-page.delay:#{300}}", timeUnit = TimeUnit.SECONDS, initialDelay = 10)
+    public void scheduledArticleFetching() {
+        var  parcedArticles =fetchLastN(articleProviderProperties.getArticleCount());
 
     }
 
