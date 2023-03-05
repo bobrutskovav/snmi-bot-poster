@@ -18,4 +18,11 @@ public class ArticleProviderProperties {
     @NotEmpty
     @URL
     private String targetUrlArchive;
+
+    @NotEmpty
+    @URL
+    private String gateWayUrl;
+
+    @NotEmpty
+    private String botEndpoint;
 }

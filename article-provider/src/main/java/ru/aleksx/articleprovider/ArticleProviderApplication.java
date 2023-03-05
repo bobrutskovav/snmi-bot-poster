@@ -35,8 +35,9 @@ public class ArticleProviderApplication {
 
     @Bean
     public RestTemplate restTemplate(ArticleProviderProperties articleProviderProperties) {
-       RestTemplateBuilder builder = new RestTemplateBuilder();
-       builder.rootUri(articleProviderProperties.getBotAddress());
+        RestTemplateBuilder builder = new RestTemplateBuilder();
+        return builder.rootUri(articleProviderProperties.getGateWayUrl())
+                .build();
     }
 
 }
