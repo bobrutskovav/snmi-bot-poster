@@ -136,6 +136,7 @@ public class SnmiBot extends TelegramLongPollingBot {
     private void sendHtmlMessage(StringBuilder textBuilder) throws TelegramApiException {
         var msg = new SendMessage(botProperties.getChannelUuid(), textBuilder.toString());
         msg.enableHtml(true);
+        msg.disableWebPagePreview();
         execute(msg);
     }
 }
